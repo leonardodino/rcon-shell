@@ -1,0 +1,11 @@
+{
+  "include": ["./src"],
+  "compilerOptions": {
+    "noEmit": true,
+    "declaration": true,
+    "outDir": "dist",
+    "sourceMap": false,
+    "target": "es2015",
+    "strict": true
+  }
+}
