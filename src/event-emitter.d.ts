@@ -1,28 +1,20 @@
-type Arguments<T> = [T] extends [(...args: infer U) => any]
-  ? U
-  : [T] extends [void]
-  ? []
-  : [T]
+type Events = Record<string | symbol, (...args: any[]) => void>
 
-type EventShape = Record<string | symbol, (...args: any[]) => void>
-export declare class EventEmitter<Events extends EventShape = EventShape>
+export declare class EventEmitter<E extends Events = Events>
   implements NodeJS.EventEmitter {
-  addListener<E extends keyof Events>(event: E, listener: Events[E]): this
-  on<E extends keyof Events>(event: E, listener: Events[E]): this
-  once<E extends keyof Events>(event: E, listener: Events[E]): this
-  prependListener<E extends keyof Events>(event: E, listener: Events[E]): this
-  prependOnceListener<E extends keyof Events>(
-    event: E,
-    listener: Events[E],
-  ): this
-  off<E extends keyof Events>(event: E, listener: Events[E]): this
-  removeAllListeners<E extends keyof Events>(event?: E): this
-  removeListener<E extends keyof Events>(event: E, listener: Events[E]): this
-  emit<E extends keyof Events>(event: E, ...args: Arguments<Events[E]>): boolean
-  eventNames<E extends keyof Events>(): E[]
-  listeners<E extends keyof Events>(event: E): Events[E][]
-  rawListeners<E extends keyof Events>(event: E): Events[E][]
-  listenerCount<E extends keyof Events>(event: E): number
+  addListener<K extends keyof E>(event: K, listener: E[K]): this
+  on<K extends keyof E>(event: K, listener: E[K]): this
+  once<K extends keyof E>(event: K, listener: E[K]): this
+  prependListener<K extends keyof E>(event: K, listener: E[K]): this
+  prependOnceListener<K extends keyof E>(event: K, listener: E[K]): this
+  off<K extends keyof E>(event: K, listener: E[K]): this
+  removeAllListeners<K extends keyof E>(event?: K): this
+  removeListener<K extends keyof E>(event: K, listener: E[K]): this
+  emit<K extends keyof E>(event: K, ...args: Parameters<E[K]>): boolean
+  eventNames<K extends keyof E>(): K[]
+  listeners<K extends keyof E>(event: K): E[K][]
+  rawListeners<K extends keyof E>(event: K): E[K][]
+  listenerCount<K extends keyof E>(event: K): number
   getMaxListeners(): number
   setMaxListeners(maxListeners: number): this
 }
