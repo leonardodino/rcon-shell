@@ -1,4 +1,4 @@
-#! /usr/bin/env node
+#!/usr/bin/env node
 
 import { Rcon } from './rcon'
 import { CLI } from './cli'
