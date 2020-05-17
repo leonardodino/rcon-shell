@@ -19,9 +19,14 @@
     "lint": "prettier . --check && tsc"
   },
   "babel": {
-    "plugins": [
+    "presets": [
       [
-        "@babel/plugin-proposal-optional-chaining"
+        "@babel/env",
+        {
+          "targets": {
+            "node": "10"
+          }
+        }
       ]
     ]
   },
