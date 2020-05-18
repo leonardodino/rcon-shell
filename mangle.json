@@ -1,5 +1,8 @@
 {
   "minify": {
+    "compress": {
+      "unsafe": true
+    },
     "mangle": {
       "properties": {
         "regex": "^_"
