@@ -42,10 +42,10 @@ export class Rcon extends EventEmitter<Events> {
     return this
   }
 
-  send(data: string) {
-    if (!this._token) return this.emit('error', NOT_AUTHENTICATED)
+  async send(data: string) {
+    if (!this._token) return Promise.reject(NOT_AUTHENTICATED)
     const parts = ['rcon', this._token, this._password, data.trim()]
-    this._sendSocket(parts.filter(Boolean))
+    return this._sendSocket(parts.filter(Boolean))
   }
 
   disconnect() {
@@ -53,16 +53,30 @@ export class Rcon extends EventEmitter<Events> {
     return this
   }
 
-  private _sendSocket = (parts: string[]) => {
-    if (!this._socket) return this.emit('error', NOT_CONNECTED)
-    const string = parts.join(' ') + '\n'
-    const buffer = Buffer.alloc(offset + Buffer.byteLength(string))
-    buffer.writeInt32LE(-1, 0)
-    buffer.write(string, offset)
-    this._socket.send(buffer, 0, buffer.length, this._port, this._host)
+  isAuthorized() {
+    return !!this._token
   }
 
-  private _handleSocketMessage = (data: Buffer) => {
+  private _sendSocket = (parts: string[]) => {
+    return new Promise<void>((resolve, reject) => {
+      if (!this._socket) return reject(NOT_CONNECTED)
+      const string = parts.join(' ') + '\n'
+      const buffer = Buffer.alloc(offset + Buffer.byteLength(string))
+      buffer.writeInt32LE(-1, 0)
+      buffer.write(string, offset)
+      this._socket.send(
+        buffer,
+        0,
+        buffer.length,
+        this._port,
+        this._host,
+        (error) => (error ? reject(error) : resolve()),
+      )
+    })
+  }
+
+  /** must always send an event (error|auth|response) */
+  private _handleSocketMessage = (data: Buffer): boolean => {
     if (
       data.readUInt32LE(0) === 0xfffffffe &&
       data.readUInt8(5) === 0x00 &&
@@ -85,7 +99,7 @@ export class Rcon extends EventEmitter<Events> {
       return this.emit('auth')
     }
 
-    return this.emit('response', string.substr(1, string.length - 2))
+    return this.emit('response', string.substr(1))
   }
 
   private _handleSocketListening = () => {
