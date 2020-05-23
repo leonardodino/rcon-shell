@@ -1,5 +1,5 @@
 import { createInterface } from 'readline'
-import { Rcon } from './rcon'
+import { RconClient } from './rcon-client'
 
 const {
   RCON_HOST = '127.0.0.1',
@@ -7,50 +7,47 @@ const {
   RCON_PASSWORD = '',
 } = process.env
 
-export const CLI = (
-  overrides?: Partial<ConstructorParameters<typeof Rcon>[0]>,
+const send = async (client: RconClient, command: string) => {
+  try {
+    // TODO: add Promise.race for ctrl+c
+    const result = await client.send(command)
+    process.stdout.write(`\u001b[K${result}`)
+    if (result.includes('Bad rcon_password.')) process.exit(1)
+  } catch (error) {
+    process.stderr.write(`\u001b[31m!\u001b[0m ${error.message.trim()}\n`)
+  }
+}
+
+export const CLI = async (
+  overrides?: Partial<ConstructorParameters<typeof RconClient>[0]>,
 ) => {
   const rl = createInterface({
     input: process.stdin,
     output: process.stdout,
+    removeHistoryDuplicates: true,
     prompt: '\u001b[33mRCON>\u001b[0m ',
   })
 
-  const connection = new Rcon({
+  const client = new RconClient({
     host: RCON_HOST,
     port: +RCON_PORT,
     password: RCON_PASSWORD,
     ...overrides,
   })
 
-  process.stdout.write(`Connecting to ${RCON_HOST}:${RCON_PORT}\n`)
+  process.stdout.write(`Connecting to ${client.address}...\r`)
 
-  connection.on('auth', () => {
-    connection.send('status')
-  })
-
-  connection.on('response', (res) => {
-    process.stdout.write(res + '\n')
-    if (res.includes('Bad rcon_password.')) process.exit(1)
-    rl.prompt()
-  })
-
-  connection.on('error', (error) => {
-    process.stderr.write(`\u001b[31m!\u001b[0m ${error.message}`)
-  })
-
-  connection.on('close', () => {
+  await client.connect(() => {
     process.stdout.write('Socket closed!')
     process.exit()
   })
 
-  connection.connect()
+  await send(client, 'status')
+  rl.prompt()
 
-  rl.on('line', (line) => {
+  rl.on('line', async (line) => {
     if (['exit', 'quit'].includes(line)) return process.exit(0)
-
-    connection.send(line)
+    await send(client, line)
+    rl.prompt()
   })
-
-  connection.on('close', () => process.exit(0))
 }
