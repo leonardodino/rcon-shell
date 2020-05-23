@@ -43,9 +43,9 @@ export class Rcon extends EventEmitter<Events> {
   }
 
   send(data: string) {
-    if (!this._token) return this.emit('error', NOT_AUTHENTICATED)
+    if (!this._token) return Promise.reject(NOT_AUTHENTICATED)
     const parts = ['rcon', this._token, this._password, data.trim()]
-    this._sendSocket(parts.filter(Boolean))
+    return this._sendSocket(parts.filter(Boolean))
   }
 
   disconnect() {
@@ -53,14 +53,68 @@ export class Rcon extends EventEmitter<Events> {
     return this
   }
 
-  private _sendSocket = (parts: string[]) => {
-    if (!this._socket) return this.emit('error', NOT_CONNECTED)
-    const string = parts.join(' ') + '\n'
-    const buffer = Buffer.alloc(offset + Buffer.byteLength(string))
-    buffer.writeInt32LE(-1, 0)
-    buffer.write(string, offset)
-    this._socket.send(buffer, 0, buffer.length, this._port, this._host)
+  ready() {
+    if (this._token) return Promise.resolve()
+    return new Promise<void>((resolve, reject) => {
+      const dispose = () => {
+        this.off('auth', resolve)
+        this.off('error', reject)
+      }
+      this.on('auth', () => (dispose(), resolve()))
+      this.on('error', () => (dispose(), reject()))
+    })
   }
+
+  [Symbol.asyncIterator](): AsyncIterator<string> {
+    const ready = this.ready()
+    const status = { done: false }
+    const queue: string[] = []
+    const push = (message: string) => queue.push(message)
+    this.on('response', push)
+    this.once('close', () => {
+      this.off('response', push)
+      status.done = true
+    })
+    const next = async (): Promise<{ value: string; done: boolean }> => {
+      await ready
+      if (queue.length) {
+        return {
+          value: queue.shift()!,
+          done: queue.length === 0 && status.done,
+        }
+      }
+      if (status.done) return { done: true, value: '' }
+      await new Promise((resolve) => {
+        const settle = () => {
+          resolve()
+          this.off('response', settle)
+          this.off('close', settle)
+        }
+        this.on('response', settle)
+        this.on('close', settle)
+      })
+      return await next()
+    }
+
+    return { next }
+  }
+
+  private _sendSocket = (parts: string[]) =>
+    new Promise<void>((resolve, reject) => {
+      if (!this._socket) return reject(NOT_CONNECTED)
+      const string = parts.join(' ') + '\n'
+      const buffer = Buffer.alloc(offset + Buffer.byteLength(string))
+      buffer.writeInt32LE(-1, 0)
+      buffer.write(string, offset)
+      this._socket.send(
+        buffer,
+        0,
+        buffer.length,
+        this._port,
+        this._host,
+        (err) => (err ? reject(err) : resolve()),
+      )
+    })
 
   private _handleSocketMessage = (data: Buffer) => {
     if (
@@ -90,6 +144,6 @@ export class Rcon extends EventEmitter<Events> {
 
   private _handleSocketListening = () => {
     this.emit('connect')
-    this._sendSocket(['challenge', 'rcon'])
+    return this._sendSocket(['challenge', 'rcon'])
   }
 }
