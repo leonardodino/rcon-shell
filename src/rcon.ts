@@ -63,6 +63,17 @@ export class Rcon extends EventEmitter<Events> {
   }
 
   private _handleSocketMessage = (data: Buffer) => {
+    if (
+      data.readUInt32LE(0) === 0xfffffffe &&
+      data.readUInt8(5) === 0x00 &&
+      data.readUInt16LE(6) === 0x0000
+    ) {
+      data = Buffer.concat([
+        Buffer.from([0xff, 0xff, 0xff, 0xff]),
+        Uint8Array.prototype.slice.call(data, 13),
+      ])
+    }
+
     if (data.readUInt32LE(0) !== 0xffffffff) {
       return this.emit('error', new Error('Received malformed packet'))
     }
