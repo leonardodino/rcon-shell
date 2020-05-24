@@ -1,5 +1,7 @@
 import { Rcon } from './rcon'
 
+const errorRegExp = /Bad (?:challenge|rcon_password)\./
+
 /** higher level abstraction over raw udp rcon */
 export class RconClient {
   address: string
@@ -54,7 +56,13 @@ export class RconClient {
         timeout = setTimeout(() => {
           promise.then(() => {
             cleanup()
-            resolve(chunks.join(''))
+            const result = chunks.join('')
+            if (errorRegExp.test(result)) {
+              const error = new Error(result)
+              error.name = 'AuthError'
+              return reject(error)
+            }
+            return resolve(result)
           })
         }, 32)
       }

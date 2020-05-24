@@ -12,9 +12,10 @@ const send = async (client: RconClient, command: string) => {
     // TODO: add Promise.race for ctrl+c
     const result = await client.send(command)
     process.stdout.write(`\u001b[K${result}`)
-    if (result.includes('Bad rcon_password.')) process.exit(1)
   } catch (error) {
-    process.stderr.write(`\u001b[31m!\u001b[0m ${error.message.trim()}\n`)
+    const message = error.toString().trim()
+    process.stderr.write(`\u001b[K\u001b[31m!\u001b[0m ${message}\n`)
+    if (error.name === 'AuthError') process.exit(1)
   }
 }
 
