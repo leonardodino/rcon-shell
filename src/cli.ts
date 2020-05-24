@@ -8,17 +8,21 @@ const {
   RCON_PASSWORD = '',
 } = process.env
 
-const send = async (client: RconClient, command: string) => {
-  try {
-    // TODO: add Promise.race for ctrl+c
-    const result = await client.send(command)
-    process.stdout.write(`\u001b[K${result}`)
-  } catch (error) {
-    const message = error.toString().trim()
-    process.stderr.write(`\u001b[K\u001b[31m!\u001b[0m ${message}\n`)
-    if (error.name === 'AuthError') process.exit(1)
+const handle = <T>(p: Promise<T>): Promise<T | Error> =>
+  new Promise(p.then.bind(p))
+
+const write = (message: string | Error) => {
+  if (typeof message === 'string') {
+    return process.stdout.write(`\u001b[K${message}`)
   }
+  const error = message.toString().trim()
+  process.stderr.write(`\u001b[K\u001b[31m!\u001b[0m ${error}\n`)
+  if (message.name === 'AuthError') process.exit(1)
 }
+
+// TODO: add Promise.race for ctrl+c
+const send = async (client: RconClient, command: string) =>
+  write(await handle(client.send(command)))
 
 export const CLI = async (
   overrides?: Partial<ConstructorParameters<typeof RconClient>[0]>,
@@ -28,6 +32,9 @@ export const CLI = async (
     port: +RCON_PORT,
     password: RCON_PASSWORD,
     ...overrides,
+  }).on('message', (message) => {
+    write(typeof message === 'string' ? `\r${message.trimEnd()}\n` : message)
+    rl.prompt()
   })
 
   const completions = new Completions(client)

@@ -1,13 +1,24 @@
 import { Rcon } from './rcon'
+import { EventEmitter } from './event-emitter'
 
 const errorRegExp = /Bad (?:challenge|rcon_password)\./
 
+type Message = string | Error
+type ClientEvents = { message: (message: Message) => void }
+
 /** higher level abstraction over raw udp rcon */
-export class RconClient {
+export class RconClient extends EventEmitter<ClientEvents> {
   address: string
   private readonly _config: ConstructorParameters<typeof Rcon>[0]
   private readonly _rcon: Rcon
+  private readonly _emit = (message: Message) => this.emit('message', message)
+  private readonly _handleRcon = (message: Message) => this._handler(message)
+
+  /** this is a mutable pointer! */
+  private _handler: ClientEvents['message'] = this._emit
+
   constructor(config: ConstructorParameters<typeof Rcon>[0]) {
+    super()
     this._config = config
     this._rcon = new Rcon(config)
     this.address = `${config.host}:${config.port}`
@@ -17,11 +28,13 @@ export class RconClient {
     return new RconClient(this._config)
   }
 
-  connect(onDisconnect?: () => void): Promise<void> {
+  async connect(onDisconnect?: () => void): Promise<void> {
     if (onDisconnect) this._rcon.once('close', onDisconnect)
     const promise = this.ready()
     this._rcon.connect()
-    return promise
+    await promise
+    this._rcon.on('error', this._handleRcon)
+    this._rcon.on('response', this._handleRcon)
   }
 
   disconnect(): Promise<void> {
@@ -29,6 +42,8 @@ export class RconClient {
       this._rcon.on('close', resolve),
     )
     this._rcon.disconnect()
+    this._rcon.off('error', this._handleRcon)
+    this._rcon.off('response', this._handleRcon)
     return promise
   }
 
@@ -48,15 +63,16 @@ export class RconClient {
     const chunks: string[] = []
     let timeout: NodeJS.Timeout
     let promise: Promise<void>
+    const cleanup = () => {
+      clearTimeout(timeout)
+      this._handler = this._emit
+    }
 
     return new Promise<string>((resolve, reject) => {
       const rejectAndCleanup = (error: Error) => (cleanup(), reject(error))
-      const cleanup = () => {
-        clearTimeout(timeout)
-        this._rcon.off('error', rejectAndCleanup)
-        this._rcon.off('response', collect)
-      }
-      const collect = (message: string) => {
+      this._handler = (message: Message) => {
+        if (message instanceof Error) return rejectAndCleanup(message)
+
         chunks.push(message)
         if (timeout) clearTimeout(timeout)
         timeout = setTimeout(() => {
@@ -72,8 +88,6 @@ export class RconClient {
           })
         }, 32)
       }
-      this._rcon.on('response', collect)
-      this._rcon.on('error', rejectAndCleanup)
       promise = this._rcon.send(command).catch(rejectAndCleanup)
     })
   }
