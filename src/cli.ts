@@ -1,5 +1,6 @@
 import { createInterface } from 'readline'
 import { RconClient } from './rcon-client'
+import { Completions } from './completions'
 
 const {
   RCON_HOST = '127.0.0.1',
@@ -22,18 +23,21 @@ const send = async (client: RconClient, command: string) => {
 export const CLI = async (
   overrides?: Partial<ConstructorParameters<typeof RconClient>[0]>,
 ) => {
-  const rl = createInterface({
-    input: process.stdin,
-    output: process.stdout,
-    removeHistoryDuplicates: true,
-    prompt: '\u001b[33mRCON>\u001b[0m ',
-  })
-
   const client = new RconClient({
     host: RCON_HOST,
     port: +RCON_PORT,
     password: RCON_PASSWORD,
     ...overrides,
+  })
+
+  const completions = new Completions(client)
+
+  const rl = createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    removeHistoryDuplicates: true,
+    prompt: '\u001b[33mRCON>\u001b[0m ',
+    completer: completions.completer,
   })
 
   process.stdout.write(`Connecting to ${client.address}...\r`)
@@ -44,6 +48,7 @@ export const CLI = async (
   })
 
   await send(client, 'status')
+  completions.load()
   rl.prompt()
 
   rl.on('line', async (line) => {
