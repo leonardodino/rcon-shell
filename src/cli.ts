@@ -1,6 +1,7 @@
-import { createInterface } from 'readline'
+import { createInterface, Interface } from 'readline'
 import { RconClient } from './rcon-client'
 import { Completions } from './completions'
+import { canceled } from './cancellable'
 
 const {
   RCON_HOST = '127.0.0.1',
@@ -9,7 +10,7 @@ const {
 } = process.env
 
 const handle = <T>(p: Promise<T>): Promise<T | Error> =>
-  new Promise(p.then.bind(p))
+  new Promise((resolve) => p.then(resolve, resolve))
 
 const write = (message: string | Error) => {
   if (typeof message === 'string') {
@@ -20,8 +21,11 @@ const write = (message: string | Error) => {
   if (message.name === 'AuthError') process.exit(1)
 }
 
-const send = async (client: RconClient, command: string) =>
-  write(await handle(client.send(command)))
+const send = async (client: RconClient, command: string, rl?: Interface) => {
+  const promise = handle(client.send(command))
+  if (rl && (await canceled(rl, promise))) return
+  write(await promise)
+}
 
 export const CLI = async (
   overrides?: Partial<ConstructorParameters<typeof RconClient>[0]>,
@@ -59,7 +63,7 @@ export const CLI = async (
   rl.prompt()
   for await (const line of rl) {
     if (['exit', 'quit'].includes(line)) return process.exit(0)
-    await send(client, line)
+    await send(client, line, rl)
     rl.prompt()
   }
 }
