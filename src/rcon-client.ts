@@ -5,10 +5,16 @@ const errorRegExp = /Bad (?:challenge|rcon_password)\./
 /** higher level abstraction over raw udp rcon */
 export class RconClient {
   address: string
-  private _rcon: Rcon
+  private readonly _config: ConstructorParameters<typeof Rcon>[0]
+  private readonly _rcon: Rcon
   constructor(config: ConstructorParameters<typeof Rcon>[0]) {
+    this._config = config
     this._rcon = new Rcon(config)
     this.address = `${config.host}:${config.port}`
+  }
+
+  clone() {
+    return new RconClient(this._config)
   }
 
   connect(onDisconnect?: () => void): Promise<void> {
