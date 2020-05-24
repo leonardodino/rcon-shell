@@ -99,7 +99,7 @@ export class Rcon extends EventEmitter<Events> {
       return this.emit('auth')
     }
 
-    return this.emit('response', string.substr(1))
+    return this.emit('response', string.substr(1).replace(/\u0000+$/, ''))
   }
 
   private _handleSocketListening = () => {
