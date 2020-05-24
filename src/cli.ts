@@ -20,7 +20,6 @@ const write = (message: string | Error) => {
   if (message.name === 'AuthError') process.exit(1)
 }
 
-// TODO: add Promise.race for ctrl+c
 const send = async (client: RconClient, command: string) =>
   write(await handle(client.send(command)))
 
@@ -57,9 +56,10 @@ export const CLI = async (
   await send(client, 'status')
   completions.load()
 
-  rl.on('line', async (line) => {
+  rl.prompt()
+  for await (const line of rl) {
     if (['exit', 'quit'].includes(line)) return process.exit(0)
     await send(client, line)
     rl.prompt()
-  }).prompt()
+  }
 }
