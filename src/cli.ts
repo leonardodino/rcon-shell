@@ -38,7 +38,7 @@ export const CLI = async (
     removeHistoryDuplicates: true,
     prompt: '\u001b[33mRCON>\u001b[0m ',
     completer: completions.completer,
-  })
+  }).on('close', () => process.exit(0))
 
   process.stdout.write(`Connecting to ${client.address}...\r`)
 
@@ -49,11 +49,10 @@ export const CLI = async (
 
   await send(client, 'status')
   completions.load()
-  rl.prompt()
 
   rl.on('line', async (line) => {
     if (['exit', 'quit'].includes(line)) return process.exit(0)
     await send(client, line)
     rl.prompt()
-  })
+  }).prompt()
 }
