@@ -5,10 +5,12 @@ import { terser } from 'rollup-plugin-terser'
 import filesize from 'rollup-plugin-filesize'
 import pkg from './package.json'
 
+const formats = { [pkg.module]: 'esm' }
+
 /** @type {import('rollup').RollupOptions[]} */
-const config = [pkg.main, pkg.bin].map((file) => ({
+const config = [pkg.main, pkg.bin, pkg.module].map((file) => ({
   input: file.replace(/^dist\//, 'src/').replace(/\.js$/, ''),
-  output: { file, format: 'cjs' },
+  output: { file, format: formats[file] || 'cjs' },
   onwarn: (warning) => {
     throw new Error(warning.message)
   },

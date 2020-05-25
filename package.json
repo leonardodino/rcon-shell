@@ -6,8 +6,10 @@
   "author": "Leonardo Dino",
   "license": "MIT",
   "main": "dist/index.js",
+  "module": "dist/esm.js",
   "bin": "dist/rcon-shell",
   "types": "dist/index.d.ts",
+  "sideEffects": false,
   "files": [
     "dist/*"
   ],
