@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { createInterface, Interface } from 'readline'
+import { RconConfig } from './rcon'
 import { RconClient } from './rcon-client'
 import { Completions } from './completions'
 import { canceled } from './cancellable'
@@ -29,9 +30,7 @@ const send = async (client: RconClient, command: string, rl?: Interface) => {
   write(await promise)
 }
 
-const CLI = async (
-  overrides?: Partial<ConstructorParameters<typeof RconClient>[0]>,
-) => {
+export const RconShell = async (overrides?: Partial<RconConfig>) => {
   const client = new RconClient({
     host: RCON_HOST,
     port: +RCON_PORT,
@@ -70,5 +69,4 @@ const CLI = async (
   }
 }
 
-module.exports = CLI
-if (module === require.main) CLI()
+if (module === require.main) RconShell()

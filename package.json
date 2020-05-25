@@ -7,15 +7,13 @@
   "license": "MIT",
   "main": "dist/index.js",
   "module": "dist/esm.js",
-  "bin": "dist/rcon-shell",
+  "bin": "bin/rcon-shell",
   "types": "dist/index.d.ts",
   "sideEffects": false,
-  "files": [
-    "dist/*"
-  ],
   "scripts": {
-    "build": "rm -r ./dist; rollup -c rollup.config.ts",
-    "postbuild": "tsc && cp ./src/event-emitter.d.ts ./dist",
+    "prebuild": "rm -rf ./dist ./bin",
+    "build": "rollup -c rollup.config.ts && tsc",
+    "postbuild": "cp ./src/event-emitter.d.ts ./dist",
     "prepublishOnly": "$npm_execpath run build",
     "format": "prettier . --write",
     "lint": "prettier . --check"

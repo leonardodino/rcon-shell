@@ -14,6 +14,7 @@ type Events = {
   auth: () => void
   connect: () => void
 }
+export type RconConfig = { host: string; port: number; password: string }
 
 export class Rcon extends EventEmitter<Events> {
   private _host: string
@@ -21,7 +22,7 @@ export class Rcon extends EventEmitter<Events> {
   private _password: string
   private _token: null | string
   private _socket: null | Socket
-  constructor(settings: { host: string; port: number; password: string }) {
+  constructor(settings: RconConfig) {
     super()
     this._host = settings.host
     this._port = settings.port

@@ -1,4 +1,4 @@
-import { Rcon } from './rcon'
+import { Rcon, RconConfig } from './rcon'
 import { EventEmitter } from './event-emitter'
 
 const errorRegExp = /Bad (?:challenge|rcon_password)\./
@@ -9,7 +9,7 @@ type ClientEvents = { message: (message: Message) => void }
 /** higher level abstraction over raw udp rcon */
 export class RconClient extends EventEmitter<ClientEvents> {
   address: string
-  private readonly _config: ConstructorParameters<typeof Rcon>[0]
+  private readonly _config: RconConfig
   private readonly _rcon: Rcon
   private readonly _emit = (message: Message) => this.emit('message', message)
   private readonly _handleRcon = (message: Message) => this._handler(message)
@@ -17,7 +17,7 @@ export class RconClient extends EventEmitter<ClientEvents> {
   /** this is a mutable pointer! */
   private _handler: ClientEvents['message'] = this._emit
 
-  constructor(config: ConstructorParameters<typeof Rcon>[0]) {
+  constructor(config: RconConfig) {
     super()
     this._config = config
     this._rcon = new Rcon(config)

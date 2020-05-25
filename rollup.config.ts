@@ -6,11 +6,12 @@ import filesize from 'rollup-plugin-filesize'
 import pkg from './package.json'
 
 const formats = { [pkg.module]: 'esm' }
+const sourcemaps = { [pkg.module]: true, [pkg.main]: true, [pkg.bin]: false }
 
 /** @type {import('rollup').RollupOptions[]} */
 const config = [pkg.main, pkg.bin, pkg.module].map((file) => ({
-  input: file.replace(/^dist\//, 'src/').replace(/\.js$/, ''),
-  output: { file, format: formats[file] || 'cjs', sourcemap: true },
+  input: file.replace(/^(dist|bin)\//, 'src/').replace(/\.js$/, ''),
+  output: { file, format: formats[file] || 'cjs', sourcemap: sourcemaps[file] },
   onwarn: (warning) => {
     throw new Error(warning.message)
   },
