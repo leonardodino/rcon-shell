@@ -10,7 +10,7 @@ const formats = { [pkg.module]: 'esm' }
 /** @type {import('rollup').RollupOptions[]} */
 const config = [pkg.main, pkg.bin, pkg.module].map((file) => ({
   input: file.replace(/^dist\//, 'src/').replace(/\.js$/, ''),
-  output: { file, format: formats[file] || 'cjs' },
+  output: { file, format: formats[file] || 'cjs', sourcemap: true },
   onwarn: (warning) => {
     throw new Error(warning.message)
   },
