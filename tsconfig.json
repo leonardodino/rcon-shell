@@ -1,7 +1,7 @@
 {
   "include": ["./src"],
   "compilerOptions": {
-    "noEmit": true,
+    "emitDeclarationOnly": true,
     "declaration": true,
     "outDir": "dist",
     "sourceMap": false,
