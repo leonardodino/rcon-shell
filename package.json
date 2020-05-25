@@ -1,6 +1,6 @@
 {
   "name": "rcon-shell",
-  "version": "0.0.3-alpha.0",
+  "version": "0.0.4-alpha.0",
   "description": "hlds rcon shell client",
   "repository": "https://github.com/leonardodino/rcon-shell",
   "author": "Leonardo Dino",
