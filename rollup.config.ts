@@ -5,10 +5,10 @@ import { terser } from 'rollup-plugin-terser'
 import filesize from 'rollup-plugin-filesize'
 import pkg from './package.json'
 
-/** @type {import('rollup').RollupOptions} */
-export default {
-  input: 'src/index.ts',
-  output: [{ file: pkg.main, format: 'cjs' }],
+/** @type {import('rollup').RollupOptions[]} */
+const config = [pkg.main, pkg.bin].map((file) => ({
+  input: file.replace(/^dist\//, 'src/').replace(/\.js$/, ''),
+  output: { file, format: 'cjs' },
   onwarn: (warning) => {
     throw new Error(warning.message)
   },
@@ -25,4 +25,6 @@ export default {
     }),
     filesize({ showBeforeSizes: process.env.CI }),
   ],
-}
+}))
+
+export default config

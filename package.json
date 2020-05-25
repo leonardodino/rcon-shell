@@ -6,14 +6,13 @@
   "author": "Leonardo Dino",
   "license": "MIT",
   "main": "dist/index.js",
-  "bin": "dist/index.js",
+  "bin": "dist/rcon-shell",
   "types": "dist/index.d.ts",
   "files": [
     "dist/*"
   ],
   "scripts": {
-    "prebuild": "rm -r ./dist",
-    "build": "rollup -c rollup.config.ts",
+    "build": "rm -r ./dist; rollup -c rollup.config.ts",
     "postbuild": "tsc && cp ./src/event-emitter.d.ts ./dist",
     "prepare": "$npm_execpath run build",
     "format": "prettier . --write",

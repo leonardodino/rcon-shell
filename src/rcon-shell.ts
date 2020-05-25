@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { createInterface, Interface } from 'readline'
 import { RconClient } from './rcon-client'
 import { Completions } from './completions'
@@ -27,7 +29,7 @@ const send = async (client: RconClient, command: string, rl?: Interface) => {
   write(await promise)
 }
 
-export const CLI = async (
+const CLI = async (
   overrides?: Partial<ConstructorParameters<typeof RconClient>[0]>,
 ) => {
   const client = new RconClient({
@@ -67,3 +69,6 @@ export const CLI = async (
     rl.prompt()
   }
 }
+
+module.exports = CLI
+if (module === require.main) CLI()

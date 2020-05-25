@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 
-import { Rcon } from './rcon'
-import { RconClient } from './rcon-client'
-import { CLI } from './cli'
-export { Rcon, RconClient, CLI }
+export { Rcon } from './rcon'
+export { RconClient } from './rcon-client'
 
-if (module === require.main) CLI()
+if (module === require.main) require('./rcon-shell')()
