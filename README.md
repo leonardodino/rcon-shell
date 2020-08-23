@@ -1,37 +1,35 @@
 # rcon-shell
 
-[<img width="570" alt="rcon-shell-img3" src="https://user-images.githubusercontent.com/8649362/90320437-575c0600-df39-11ea-932d-324b354b457d.png" align='left'>](https://github.com/leonardodino/rcon-shell)
+[<img width="570" alt="rcon-shell-img3" src="https://user-images.githubusercontent.com/8649362/90320437-575c0600-df39-11ea-932d-324b354b457d.png" align="left">](https://github.com/leonardodino/rcon-shell)
 
 [**`rcon`**](https://developer.valvesoftware.com/wiki/Half-Life_Dedicated_Server#Connectivity) interactive shell via `µdp`
 
 ## features
 
-:brain:&ensp;**autocompletion**
-<br>&emsp;&ensp;<sub>for commands, maps and `cvar`s</sub>
+:brain:&emsp;**autocompletion**
+<br>&emsp;&emsp;<sub>for commands, maps and `cvar`s</sub>
 
 <br>
 
-:clamp:&ensp;**lightweight** + **minimalist**
-<br>&emsp;&ensp;<sub>single self-contained file, under `5kb`</sub>
-<br>&emsp;&ensp;<sub>no 3<sup>rd</sup> party dependencies</sub>
+:clamp:&emsp;**lightweight** + **minimalist**
+<br>&emsp;&emsp;<sub>single self-contained file, under `5kb`</sub>
+<br>&emsp;&emsp;<sub>no 3<sup>rd</sup> party dependencies</sub>
 
 <br>
 
-:moyai:&ensp;**compatible**
-<br>&emsp;&ensp;<sub>supports node `v10+`</sub>
-<br>&emsp;&ensp;<sub>can be saved directly to `PATH`</sub>
+:moyai:&emsp;**compatible**
+<br>&emsp;&emsp;<sub>supports node `v10+`</sub>
+<br>&emsp;&emsp;<sub>can be saved directly to `PATH`</sub>
 
 ## installation
 
-choose one of the following options
-
 <table>
   <thead><tr><th align="left">curl</th></tr></thead>
-  <tbody><tr><td align="left"><pre>
-export PREFIX=/usr/local/bin
-curl -sL https://unpkg.com/rcon-shell/bin/rcon-shell > "$PREFIX/rcon-shell"
-chmod +x "$PREFIX/rcon-shell"
-</pre></td></tr></tbody>
+  <tbody><tr><td align="left">
+    <code>curl -sL https://unpkg.com/rcon-shell/bin/rcon-shell > /usr/local/bin/rcon-shell</code>
+    <br>
+    <code>chmod +x /usr/local/bin/rcon-shell</code>
+  </td></tr></tbody>
 </table>
 
 <table align="left">
@@ -45,14 +43,14 @@ chmod +x "$PREFIX/rcon-shell"
 </table>
 <img align="left" width="1rem" height="1rem">
 <table>
-  <thead><tr><th align="left">npx (install + execute)</th></tr></thead>
+  <thead><tr><th align="left">npx</th></tr></thead>
   <tbody><tr><td align="left"><code>npx rcon-shell</code></td></tr></tbody>
 </table>
 
 ## usage
 
 ```bash
-$ RCON_HOST=example.org RCON_PASSWORD=your-password-here rcon-shell
+RCON_HOST=example.org RCON_PASSWORD=your-password-here rcon-shell
 ```
 
 the cli does not receive arguments.
